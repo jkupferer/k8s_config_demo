@@ -1,0 +1,15 @@
+---
+apiVersion: samples.operator.openshift.io/v1
+kind: Config
+metadata:
+  name: cluster
+spec:
+  managementState: Managed
+  skippedImagestreams:
+{# Loop through resources deployed to the openshift namespace #}
+{% for _r in k8s_resources | json_query("[?namespace=='openshift']|[0].resources") %}
+{#   If the resource is an imagestream file then add the imagstream name to the skip list #}
+{%   if _r.file | default('') is match('imagestreams/(.*)\.yml$') %}
+  - {{ _r.file | regex_replace('imagestreams/(.*)\.yml$', '\\1') }}
+{%   endif %}
+{% endfor %}

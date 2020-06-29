@@ -1,0 +1,60 @@
+= `k8s_config` Demo
+
+This is a demo of usage of the https://github.com/redhat-cop/k8s_config[k8s_config] Ansible role.
+
+== Setup
+
+Install `k8s_config` Ansible Role.
+
+--------------------------------------------------------------------------------
+ansible-galaxy install git+https://github.com/redhat-cop/k8s_config.git,0.4.1
+--------------------------------------------------------------------------------
+
+The `k8s_config` role will also require the Python `openshift` library.
+
+== Using the Config
+
+The `configure.yml` playbook will run cluster configuration discovery tasks then run the `k8s_config` ansible role.
+
+--------------------------------------------------------------------------------
+ansible-playbook configure.yml
+--------------------------------------------------------------------------------
+
+== Configuration Layout
+
+The configuration loaded by `k8s_config` is in the `k8s-config/` sub-directory.
+Within this directory is a `main.yml` whic provides a definition of `k8s_config_search_path`
+which defines the precedence order in which to load cluster variables and discover files and templates.
+
+--------------------------------------------------------------------------------
+include::k8s-config/main.yml[]
+--------------------------------------------------------------------------------
+
+This provides a reference showing how multiple clusters can be configured with a common base but with customizations targeting specific clusters, environment levels, and OpenShift versions.
+
+All YAML and JSON files (ending in `.yml`, `.yaml`, or `.json`) are loaded from the directories configured in `k8s_config_search_path`.
+These directories are also used for file and template lookups when `k8s_config` processes resources.
+
+== Configuration Examples
+
+=== Managing ImageStream Customization
+
+Within `k8s-config/common/vars.yml` is a configuration to define custom image streams and configure the OpenShift samples operator to allow these customizations.
+
+The design shown is placing imagestreams within the directory `common/imagestreams/` and referencing these to deploy into the `openshift` namespace.
+
+Of particular interest is the way the template used to configure the samples operator references the `k8s_resources` definition to find the list of managed imagestreams, reducing the repitition in the configuration and the risk of adding a managed imagestream and forgetting to exclude it from the samples operator config `skippedImagestreams`.
+
+== Deploying Anarchy GitOps
+
+https://github.com/redhat-cop/anarchy[Anarchy] provides a lightweight Ansible runner framework for kubernetes.
+The standard deployment patterns for Anarchy includes a https://github.com/redhat-cop/anarchy/tree/master/institutions/gitops[GitOps institution].
+The provided `anarchy-gitops-setup.yml` playbook deploys the Anarchy GitOps institution and uses this repo and the k8s_config role to make a self-managing, autonomous, cluster.
+
+To configure the Anarchy GitOps institution you can use the command below.
+This command will require https://helm.sh/[helm] for template processing.
+
+--------------------------------------------------------------------------------
+ansible-playbook anarchy-gitops-setup.yml
+--------------------------------------------------------------------------------
+

@@ -1,0 +1,16 @@
+---
+# Common variables for all environments, lowest precedence.
+#
+# k8s_config variables such as k8s_resources sholud be defined here.
+# Any variables referenced from higher precedence levels should have defaults here.
+
+# Main list of resources to be processed by k8s_config
+k8s_resources:
+- name: Samples Operator Config
+  template:
+    file: config.samples.operator.openshift.io.yml.j2
+
+- namespace: openshift
+  resources:
+  - name: ImageStream fuse7-java-openshift
+    file: imagestreams/fuse7-java-openshift.yml

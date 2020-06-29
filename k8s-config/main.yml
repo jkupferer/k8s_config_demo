@@ -1,0 +1,19 @@
+---
+k8s_config_search_path:
+# Find cluster specific configuration for the cluster by DNS domain.
+# If ingress domain is apps.mitzi.example.com then search
+# `cluster/mitzi.example.com`
+- cluster/{{ k8s_cluster_info.cluster_domain }}
+
+# Configured cluster environment level, ex: dev, test, prod
+- env_level/{{ k8s_cluster_info.env_level }}
+
+# Openshift version channel, ex: stable-4.4
+- openshift_version_channel/{{ openshift_version_channel }}
+
+# Openshift minor, ex: 4.4
+- openshift_api_minor_version/{{ openshift_api_minor_version }}
+
+# Configuration common to all clusters, though individual items may still
+# filter with `when` conditions.
+- common

@@ -1,0 +1,44 @@
+---
+- name: Deploy anarchy-k8s-config
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    anarchy_gitops_deploy_autonomous: true
+    k8s_config:
+      run_interval: 1h
+    k8s_config_sources:
+    - name: anarchy-k8s-config
+      base_path: institutions/gitops/k8s-config
+      git:
+        repo: https://github.com/redhat-cop/anarchy.git
+    set_k8s_cluster_info:
+      env_level: dev
+
+  pre_tasks:
+  - name: Set facts about the cluster
+    include_tasks:
+      file: set-facts.yml
+
+  roles:
+  - role: k8s_config
+
+  tasks:
+  - name: Create k8s-config-demo subject
+    when: anarchy_gitops_deploy_autonomous | default(true) | bool
+    k8s:
+      apply: true
+      definition:
+        apiVersion: anarchy.gpte.redhat.com/v1
+        kind: AnarchySubject
+        metadata:
+          name: k8s-config-demo
+          namespace: anarchy-k8s-config
+        spec:
+          governor: gitops
+          vars:
+            k8s_config_sources:
+            - name: k8s_config_demo
+              base_path: k8s-config
+              git:
+                repo: https://github.com/jkupferer/k8s_config_demo.git
